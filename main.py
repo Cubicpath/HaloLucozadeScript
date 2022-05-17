@@ -29,7 +29,7 @@ settings: dict[str, Any] = toml.loads(
 
 def main() -> None:
     """Program entry point. If __name__ == '__main__'."""
-    print('Welcome to HaloLuzucadeScript! Please remember that you can only redeem 120 xp boost codes per account.\n')
+    print('Welcome to HaloLucozadeScript! Please remember that you can only redeem 120 xp boost codes per account.\n')
     amount = int(input('How many clients would you like to run? ').strip())
     print('All you have to do from now on is solve the captchas!\n')
     print(f'Generating clients...\n{"-" * 50}\n')
@@ -38,7 +38,7 @@ def main() -> None:
     generate_clients(amount, settings, bin_folder=Path.cwd() / 'bin')
 
     print(f'\n{"-" * 50}\n')
-    print('All done! Thanks for using HaloLuzucadeScript!')
+    print('All done! Thanks for using HaloLucozadeScript!')
 
 
 def generate_clients(number: int, /, *args, **kwargs) -> None:

@@ -31,7 +31,7 @@ SITE_URL = 'https://halo.lucozade.com/'
 
 
 class Client:
-    """Handles Selenium logic for the Luzucade Redemption Site"""
+    """Handles Selenium logic for the Lucozade Redemption Site"""
 
     def __init__(self, settings: dict[str, Any], bin_folder: Path | None = None) -> None:
         """Initialize the client."""
