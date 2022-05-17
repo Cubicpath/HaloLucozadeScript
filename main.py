@@ -42,6 +42,7 @@ def finish_up() -> None:
     """Finish up while user starts on new client."""
     print(f'\n{"-" * 50}\n')
     print('All done! Thanks for using HaloLucozadeScript!')
+    input('Press <ENTER> to exit...')
 
 
 def generate_clients(number: int, /, *args, **kwargs) -> None:
