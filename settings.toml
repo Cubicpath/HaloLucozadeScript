@@ -1,0 +1,13 @@
+[window]  # Settings for the client browser windows.
+x_size = 600
+y_size = 1080
+
+[redeem]
+open_redemption_page = true  # Automatically open redemption page on your default browser with the code pre-filled.
+xp_boost_only = true         # Ignore non-XP boost codes (emblem/backdrop).
+
+[info]
+bar_code = "4066"              # Any valid bar code.
+phone_number = "07519 714878"  # Old number not in use.
+postcode = "BD1 1AF"           # Any UK postcode should work.
+store = "Tesco"
