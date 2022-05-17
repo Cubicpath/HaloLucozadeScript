@@ -29,20 +29,26 @@ settings: dict[str, Any] = toml.loads(
 
 def main() -> None:
     """Program entry point. If __name__ == '__main__'."""
+    print(f'{"=" * 50}')
     print('Welcome to HaloLucozadeScript! Please remember that you can only redeem 120 xp boost codes per account.\n')
-    amount = int(input('How many clients would you like to run? ').strip())
+    amount: int = int(input('How many clients would you like to run? ').strip() or '1')  # Default (no answer) is 1
     print('All you have to do from now on is solve the captchas!\n')
-    print(f'Generating clients...\n{"-" * 50}\n')
+    print(f'Generating clients...')
+    print(f'{"-" * 17}Collected-Codes{"-" * 18}\n')
 
-    # Create a thread for each client and run them in parallel.
-    generate_clients(amount, settings, bin_folder=Path.cwd() / 'bin')
+    if amount != 0:
+        # Create a thread for each client and run them in parallel.
+        generate_clients(amount, settings, bin_folder=Path.cwd() / 'bin')
+    else:
+        finish_up()
 
 
 def finish_up() -> None:
     """Finish up while user starts on new client."""
-    print(f'\n{"-" * 50}\n')
+    print(f'\n{"-" * 17}Collected-Codes{"-" * 18}\n')
     print('All done! Thanks for using HaloLucozadeScript!')
-    input('Press <ENTER> to exit...')
+    input('Press <ENTER> to exit script...')
+    print(f'{"=" * 50}')
 
 
 def generate_clients(number: int, /, *args, **kwargs) -> None:
