@@ -24,7 +24,6 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 
 # local
-from constants import *
 from utils import *
 
 SITE_URL = 'https://halo.lucozade.com/'
@@ -38,8 +37,8 @@ class Client:
         self.bin_folder: Path = Path.cwd() / 'bin' if bin_folder is None else bin_folder
         self.settings: dict[str, Any] = settings
 
-        self.browser: Firefox = Firefox(service=Service(str(bin_folder / EXECUTABLE_NAME)))
-        self.browser.set_window_size(settings['window']['x_size'], settings['window']['y_size'])
+        self.browser: Firefox = Firefox(service=Service(str(bin_folder / settings['geckodriver']['executable_name'])))
+        self.browser.set_window_size(settings['geckodriver']['x_size'], settings['geckodriver']['y_size'])
         self.browser.get(SITE_URL)
 
     def accept_cookies(self) -> None:
@@ -51,12 +50,14 @@ class Client:
         """Enter generated information into form."""
 
         # Generate information
-        info = Faker(locale=f'en_{COUNTRY}')
-        name:     str = info.first_name()
-        email:    str = info.free_email()
-        phone:    str = self.settings['info']['phone_number']
-        postcode: str = self.settings['info']['postcode']
-        store:    str = self.settings['info']['store']
+        country_code: str = self.settings['info']['country_code']
+
+        info:         Faker = Faker(locale=f'en_{country_code}')
+        name:         str = info.first_name()
+        email:        str = info.free_email()
+        phone:        str = self.settings['info']['phone_number']
+        postcode:     str = self.settings['info']['postcode']
+        store:        str = self.settings['info']['store']
 
         # Wait until the entire form is loaded
         WebDriverWait(self.browser, 30).until(EC.presence_of_element_located((By.NAME, 'firstName')))
@@ -74,7 +75,7 @@ class Client:
 
         # Select valid options
         Select(form.find_elements(By.TAG_NAME, 'select')[0]).select_by_value('+44')
-        Select(form.find_elements(By.TAG_NAME, 'select')[1]).select_by_value(COUNTRY)
+        Select(form.find_elements(By.TAG_NAME, 'select')[1]).select_by_value(country_code)
         Select(form.find_elements(By.TAG_NAME, 'select')[2]).select_by_value(store)
 
         # Check agreement boxes
