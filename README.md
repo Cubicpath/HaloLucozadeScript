@@ -2,7 +2,7 @@ HaloLucozadeScript
 ===============
 >This project uses Firefox's geckodriver, you can find the source code [here](https://github.com/mozilla/geckodriver/releases).
 
-A small script built on Selenium that automatically completes the lucozade-halo promotional form.
+A small script built on [Selenium](https://www.selenium.dev/selenium/docs/api/py/) that automatically completes the [halo-lucozade](https://halo.lucozade.com) promotional form.
 The script will automatically fill out the form and submit it, you just have to complete the captchas.
 
 ### Disclaimer:
