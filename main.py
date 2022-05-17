@@ -37,6 +37,9 @@ def main() -> None:
     # Create a thread for each client and run them in parallel.
     generate_clients(amount, settings, bin_folder=Path.cwd() / 'bin')
 
+
+def finish_up() -> None:
+    """Finish up while user starts on new client."""
     print(f'\n{"-" * 50}\n')
     print('All done! Thanks for using HaloLucozadeScript!')
 
@@ -71,6 +74,9 @@ def generate_clients(number: int, /, *args, **kwargs) -> None:
     # Close window to save resources.
     client.quit()
     atexit.unregister(client.quit)
+
+    if number == 0:
+        finish_up()
 
 
 if __name__ == '__main__':
