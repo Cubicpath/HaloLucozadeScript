@@ -5,7 +5,7 @@ A small script built on [Selenium](https://www.selenium.dev/selenium/docs/api/py
 The script will automatically fill out the form and submit it, you just have to complete the captchas.
 It takes around 15 seconds to complete one form, and a second form is generated after you finish the first one's captcha.
 
-Please remember that the maximum number Double XP codes you can redeem during this promotion is 120 per account.
+Please remember that the maximum number of Double XP codes you can redeem during this promotion is 120 per account.
 
 ### Disclaimer:
 _**This project is in no way associated with, endorsed by, or otherwise affiliated with the
