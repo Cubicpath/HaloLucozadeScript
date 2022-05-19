@@ -167,6 +167,9 @@ class Client:
         """Submit the information after the captcha."""
         form = self.browser.find_element(By.CLASS_NAME, 'infx-form-shell')
 
+        # Scroll to captcha
+        self.browser.execute_script("arguments[0].scrollIntoView();", form.find_element(By.TAG_NAME, 'iframe'))
+
         # Wait until the captcha is solved by the user
         self.browser.switch_to.frame(form.find_elements(By.TAG_NAME, 'iframe')[0])
         WebDriverWait(self.browser, 600).until(EC.presence_of_element_located(
