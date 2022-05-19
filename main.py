@@ -87,7 +87,7 @@ def generate_clients(number: int, /, *args, **kwargs) -> None:
         next_client.start()
 
     # Finish up while user starts on new client.
-    client.input_bar_code()
+    client.input_dropdown_checks()
     client.collect_reward()
     client.redeem_codes()
 

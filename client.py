@@ -189,6 +189,21 @@ class Client:
         buttons = self.browser.find_element(By.CLASS_NAME, 'button-group')
         buttons.find_elements(By.TAG_NAME, 'button')[1].click()
 
+    def input_dropdown_checks(self) -> None:
+        """Input dropdown checks."""
+        WebDriverWait(self.browser, 5).until(EC.presence_of_element_located(
+            (By.XPATH, '//option[contains(text(), "22")]')
+        ))
+
+        # Input dropdown values
+        dropdowns = self.browser.find_elements(By.TAG_NAME, 'select')
+        Select(dropdowns[0]).select_by_value('22')
+        Select(dropdowns[1]).select_by_value('19:00')
+
+        # Press play button
+        buttons = self.browser.find_element(By.CLASS_NAME, 'button-group')
+        buttons.find_elements(By.TAG_NAME, 'button')[1].click()
+
     def collect_reward(self) -> None:
         """Collect reward."""
         WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.CLASS_NAME, '__winner-state')))
