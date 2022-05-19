@@ -33,6 +33,7 @@ from selenium.webdriver.edge.options import Options as EdgeOptions
 from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.opera.options import Options as OperaOptions
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
@@ -85,14 +86,14 @@ class Client:
             case 'edge':
                 factory = cls.DriverFactory(EdgeChromiumDriverManager, Edge, EdgeOptions, EdgeService)
             case 'opera':
-                factory = cls.DriverFactory(OperaDriverManager, Opera, ChromiumOptions, None)
+                factory = cls.DriverFactory(OperaDriverManager, Opera, OperaOptions, None)
             case _:
                 raise ValueError(f'Invalid browser name: "{browser}". Please choose "firefox", "chrome", "edge", or "opera".')
 
         # Build the browser manager (installs the driver & caches result path)
         if cls._driver_path is None:
             manager: DriverManager = factory.manager_type()
-            cls._driver_path = manager.install()
+            cls._driver_path = str(Path(manager.install()).resolve(strict=True))
 
         # Designates the log file name as ./logs/[driver_name].log
         log_path: Path = Path.cwd() / f'logs/{Path(cls._driver_path).with_suffix("").name}.log'
@@ -107,7 +108,7 @@ class Client:
 
         # Create the browser options
         options = factory.options_type()
-        if issubclass(factory.options_type, ChromiumOptions):
+        if isinstance(options, ChromiumOptions):
             # Disable logging for Chromium-based browsers to eliminate noisy output in the console
             options.add_argument('--disable-logging')
             options.add_argument('--log-level=3')
@@ -116,9 +117,16 @@ class Client:
         # Build the browser driver object
         if factory.service_type is not None:
             service: Service = factory.service_type(executable_path=cls._driver_path, log_path=log_path)
-            driver = factory.driver_type(service=service, options=options)
+            driver = factory.driver_type(
+                service=service,
+                options=options
+            )
         else:
-            driver = factory.driver_type(executable_path=cls._driver_path, service_log_path=log_path, options=options)
+            driver = factory.driver_type(
+                executable_path=cls._driver_path,
+                service_log_path=log_path,
+                options=options
+            )
 
         return driver
 
