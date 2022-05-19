@@ -13,6 +13,7 @@ import webbrowser
 from collections import namedtuple
 from pathlib import Path
 from typing import Any
+from warnings import warn
 
 # 3rd-party
 from faker import Faker
@@ -175,6 +176,8 @@ class Client:
 
     def input_bar_code(self) -> None:
         """Input bar code."""
+        warn('Bar code input should not be used, instead use input_dropdown_checks()', DeprecationWarning)
+
         bar_code = self.settings['info']['bar_code']
 
         # Input bar code
