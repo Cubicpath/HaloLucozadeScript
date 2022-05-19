@@ -31,14 +31,13 @@ def main() -> None:
     """Program entry point. If __name__ == '__main__'."""
     print(f'{"=" * 50}')
     print('Welcome to HaloLucozadeScript! Please remember that you can only redeem 120 xp boost codes per account.\n')
-    amount: int = int(input('How many clients would you like to run? ').strip() or '1')  # Default (no answer) is 1
-    print('All you have to do from now on is solve the captchas!\n')
-    print(f'Generating clients...')
-    print(f'{"-" * 17}Collected-Codes{"-" * 18}\n')
+
+    browser: str = input('Please enter the browser you would like to use (supported: firefox, chrome, edge, opera): ').strip().lower()
+    amount:  int = int(input('How many clients would you like to run? ').strip() or '1')  # Default (no answer) is 1
 
     if amount != 0:
         # Create a thread for each client and run them in parallel.
-        generate_clients(amount, settings, bin_folder=Path.cwd() / 'bin')
+        generate_clients(amount, browser=browser, settings=settings)
     else:
         finish_up()
 
@@ -53,14 +52,26 @@ def finish_up() -> None:
 
 def generate_clients(number: int, /, *args, **kwargs) -> None:
     """Recursively generate and run clients."""
+    # Remember original number value.
+    __og_number: int = number if kwargs.get('__og_number') is None else kwargs.pop('__og_number')
+    first_run:   bool = number == __og_number
+
     # Negative numbers represent infinite runs.
     if number == 0:
         return
-    number -= 1
+
+    if first_run:
+        print('Installing WebDriver for Selenium automation...')
+        Client.build_browser_driver(kwargs.get('browser'), install_only=True)
+        print('Generating clients...')
 
     # Create new client.
     client = Client(*args, **kwargs)
     atexit.register(client.quit)
+
+    if first_run:
+        print('\nAll you have to do from now on is solve the captchas!\n')
+        print(f'{"-" * 17}Collected-Codes{"-" * 18}\n')
 
     # Load the form and fill it out.
     client.accept_cookies()
@@ -68,9 +79,11 @@ def generate_clients(number: int, /, *args, **kwargs) -> None:
     client.submit_form()
 
     # After captcha, launch another client.
-    if number:
-        next_client = Thread(target=generate_clients, args=(number,) + args, kwargs=kwargs)
-        next_client.name = f'Client Thread {number}'
+    next_number = number - 1
+    if next_number:
+        kwargs.update({'__og_number': __og_number})
+        next_client = Thread(target=generate_clients, args=(next_number,) + args, kwargs=kwargs)
+        next_client.name = f'Client Thread {-next_number + __og_number}'
         next_client.start()
 
     # Finish up while user starts on new client.
@@ -82,7 +95,7 @@ def generate_clients(number: int, /, *args, **kwargs) -> None:
     client.quit()
     atexit.unregister(client.quit)
 
-    if number == 0:
+    if not next_number:
         finish_up()
 
 

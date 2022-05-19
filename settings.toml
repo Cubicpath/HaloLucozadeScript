@@ -1,5 +1,4 @@
-[geckodriver]  # Settings for the client browser windows.
-executable_name = "geckodriver.exe"
+[browser]  # Settings for the client browser windows.
 x_size = 600
 y_size = 1080
 
