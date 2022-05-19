@@ -163,7 +163,7 @@ class Client:
         WebDriverWait(self.browser, 600).until(EC.presence_of_element_located((By.XPATH, '//div[contains(text(), "You are verified") and @id="recaptcha-accessible-status"]')))
         self.browser.switch_to.default_content()
 
-        wait_between(0.5, 1)
+        wait(0.5)  # Wait for animation to complete
 
         # Press next button
         buttons = self.browser.find_element(By.CLASS_NAME, 'button-group')
