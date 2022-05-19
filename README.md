@@ -14,7 +14,7 @@ Microsoft Corporation, Xbox Game Studios, 343 Industries, Suntory Holding Limite
 How to use:
 ---------------
 
-1. Install python 3.10
+1. Install [python 3.10](https://www.python.org/downloads/)
 
 2. Download the latest release zip
 
@@ -23,6 +23,11 @@ How to use:
 4. Install the requirements using `pip install -r requirements.txt` while in the folder
 
 5. Run `main.py` with python
+
+Example Console Output Image:
+---------------
+
+![example](https://i.imgur.com/AEe3ayv.png)
 
 Settings
 ---------------
