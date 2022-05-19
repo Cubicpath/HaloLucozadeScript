@@ -10,4 +10,4 @@ xp_boost_only = true         # Ignore non-XP boost codes (emblem/backdrop).
 country_code = "NI"           # Do not change this unless required.
 phone_number = "7911 123456"  # Old number not in use.
 postcode = "SW1A 1AA"         # Any North Ireland postcode should work.
-store = "Tesco"
+store = "Other"
