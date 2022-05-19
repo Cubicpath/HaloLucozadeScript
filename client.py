@@ -124,8 +124,9 @@ class Client:
         """Enter generated information into form."""
 
         # Generate information
+        # Northern Ireland is not supported by Faker, so GB is now harcoded
         country_code: str = self.settings['info']['country_code']
-        info:         Faker = Faker(locale=f'en_{country_code}')
+        info:         Faker = Faker(locale='en_GB')
         name:         str = info.first_name()
         email:        str = info.free_email()
         phone:        str = self.settings['info']['phone_number']

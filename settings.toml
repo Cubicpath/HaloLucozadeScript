@@ -7,8 +7,7 @@ open_redemption_page = true  # Automatically open redemption page on your defaul
 xp_boost_only = true         # Ignore non-XP boost codes (emblem/backdrop).
 
 [info]
-country_code = "GB"            # Do not change this unless required.
-bar_code = "4066"              # Any valid bar code. (4066, 0612, 0216, 4071, etc.)
-phone_number = "07519 714878"  # Old number not in use.
-postcode = "BD1 1AF"           # Any UK postcode should work.
+country_code = "NI"           # Do not change this unless required.
+phone_number = "7911 123456"  # Old number not in use.
+postcode = "SW1A 1AA"         # Any North Ireland postcode should work.
 store = "Tesco"
