@@ -24,10 +24,13 @@ How to use:
 
 5. Run `main.py` with python
 
-Example Console Output Image:
+Example Console Output Images:
 ---------------
-
+### Windows
 ![example](https://i.imgur.com/AEe3ayv.png)
+
+### Linux
+![example](https://i.imgur.com/QIoSexq.png)
 
 Settings
 ---------------
