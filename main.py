@@ -37,6 +37,12 @@ def main() -> None:
 
     if amount != 0:
         # Create a thread for each client and run them in parallel.
+        print('Installing WebDriver for Selenium automation...')
+        Client.build_browser_driver(browser, install_only=True)
+
+        print('Generating clients...')
+        print('\nAll you have to do from now on is solve the captchas!\n')
+        print(f'{"-" * 17}Collected-Codes{"-" * 18}\n')
         generate_clients(amount, browser=browser, settings=settings)
     else:
         finish_up()
@@ -54,24 +60,14 @@ def generate_clients(number: int, /, *args, **kwargs) -> None:
     """Recursively generate and run clients."""
     # Remember original number value.
     __og_number: int = number if kwargs.get('__og_number') is None else kwargs.pop('__og_number')
-    first_run:   bool = number == __og_number
 
     # Negative numbers represent infinite runs.
     if number == 0:
         return
 
-    if first_run:
-        print('Installing WebDriver for Selenium automation...')
-        Client.build_browser_driver(kwargs.get('browser'), install_only=True)
-        print('Generating clients...')
-
     # Create new client.
     client = Client(*args, **kwargs)
     atexit.register(client.quit)
-
-    if first_run:
-        print('\nAll you have to do from now on is solve the captchas!\n')
-        print(f'{"-" * 17}Collected-Codes{"-" * 18}\n')
 
     # Load the form and fill it out.
     client.accept_cookies()
