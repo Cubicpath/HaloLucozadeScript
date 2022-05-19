@@ -24,7 +24,6 @@ from selenium.webdriver import Opera
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chromium.options import ChromiumOptions
-from selenium.webdriver.chromium.webdriver import ChromiumDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.options import ArgOptions
 from selenium.webdriver.common.service import Service
@@ -43,7 +42,7 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from webdriver_manager.opera import OperaDriverManager
 
 # local
-from utils import *
+from utils import wait
 
 SITE_URL = 'https://halo.lucozade.com/'
 
@@ -145,7 +144,9 @@ class Client:
         form.find_element(By.NAME, 'postcode').send_keys(postcode)
 
         # Select valid options
-        WebDriverWait(self.browser, 5).until(EC.presence_of_element_located((By.XPATH, f'//option[contains(text(), "{store}")]')))
+        WebDriverWait(self.browser, 5).until(EC.presence_of_element_located(
+            (By.XPATH, f'//option[contains(text(), "{store}")]')
+        ))
         Select(form.find_elements(By.TAG_NAME, 'select')[0]).select_by_value('+44')
         Select(form.find_elements(By.TAG_NAME, 'select')[1]).select_by_value(country_code)
         Select(form.find_elements(By.TAG_NAME, 'select')[2]).select_by_value(store)
@@ -160,7 +161,9 @@ class Client:
 
         # Wait until the captcha is solved by the user
         self.browser.switch_to.frame(form.find_elements(By.TAG_NAME, 'iframe')[0])
-        WebDriverWait(self.browser, 600).until(EC.presence_of_element_located((By.XPATH, '//div[contains(text(), "You are verified") and @id="recaptcha-accessible-status"]')))
+        WebDriverWait(self.browser, 600).until(EC.presence_of_element_located(
+            (By.XPATH, '//div[contains(text(), "You are verified") and @id="recaptcha-accessible-status"]')
+        ))
         self.browser.switch_to.default_content()
 
         wait(0.5)  # Wait for animation to complete

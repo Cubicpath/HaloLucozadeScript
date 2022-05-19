@@ -17,10 +17,11 @@ repos:
     hooks:
       - id: pylint
         name: pylint
-        exclude: ^tests/
         args:
           [
-            "src", # Only lint src
+            "main.py", # Lint these modules
+            "client.py", # Lint these modules
+            "utils.py", # Lint these modules
             "-rn", # Only display messages
             "-sn", # Don't display the score
           ]

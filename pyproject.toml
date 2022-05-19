@@ -1,0 +1,61 @@
+[tool.pylint.'MASTER']
+jobs=0
+load-plugins=[
+    "pylint.extensions.docparams",
+    "pylint.extensions.docstyle",
+    "pylint.extensions.typing"
+]
+py-version="3.10"
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = [
+    "C",    # Conventions
+    "R",    # Reformats
+    # These don't work with the general design choices of the project
+    "unnecessary-lambda",       # W0108
+    "protected-access",         # W0212
+    "wildcard-import",          # W0401
+    "fixme",                    # W0511
+    "unused-wildcard-import",   # W0614
+    "redefined-builtin",        # W0622
+    # Doesn't work with (positional arguments with a default value) before a backslash and *args
+    "keyword-arg-before-vararg",# W1113
+    # These do not work with starred parameter names
+    "missing-param-doc",        # W9015
+    "differing-param-doc",      # W9017
+    # These do not work with wildcard imports using __all__
+    "import-error",             # E0401
+    "undefined-variable",       # E0602
+    "undefined-all-variable",   # E0603
+]
+enable = [
+    "disallowed-name",              # C0104
+    "empty-docstring",              # C0112
+    "unneeded-not",                 # C0113
+    "missing-module-docstring",     # C0114
+    "missing-class-docstring",      # C0115
+    "missing-function-docstring",   # C0116
+    "consider-iterating-dictionary",# C0201
+    "use-maxsplit-arg",             # C0207
+    "line-too-long",                # C0301 # Max line length is defined in [tool.pylint.'FORMAT']
+    "literal-comparison",           # R0123
+    "comparison-with-itself",       # R0124
+    "consider-using-ternary",       # R1706
+    "use-dict-literal",             # R1735
+]
+
+[tool.pylint.'REPORTS']
+output-format = "parseable"
+reports = "no"
+
+[tool.pylint.'FORMAT']
+good-names = [
+    "a", "b", "c",
+    "e",
+    "i", "id", "j", "k", "l",
+    "o",
+    "x", "y", "z",
+    "_",
+    "__",
+]
+max-line-length=160
