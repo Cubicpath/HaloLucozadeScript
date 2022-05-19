@@ -18,6 +18,7 @@ from warnings import warn
 # 3rd-party
 from faker import Faker
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver import Chrome
 from selenium.webdriver import Edge
 from selenium.webdriver import Firefox
@@ -51,6 +52,7 @@ SITE_URL = 'https://halo.lucozade.com/'
 class Client:
     """Handles Selenium logic for the Lucozade Redemption Site"""
     _driver_path: str | None = None
+    _skip_proof_of_purchase: bool = False
     DriverFactory = namedtuple(
         'Factory', ('manager_type', 'driver_type', 'options_type', 'service_type'),
         defaults=(DriverManager, RemoteWebDriver, ArgOptions, None)
@@ -61,6 +63,10 @@ class Client:
         self.settings: dict[str, Any] = settings
         x_size: int = self.settings['browser']['x_size']
         y_size: int = self.settings['browser']['y_size']
+
+        # Disable automation for the proof of purchase section (barcode / dropdowns)
+        if not self._skip_proof_of_purchase:
+            self.__class__._skip_proof_of_purchase = self.settings['redeem']['skip_proof_of_purchase']
 
         self.browser: RemoteWebDriver = self.build_browser_driver(browser)
         self.browser.set_window_size(x_size, y_size)
@@ -191,9 +197,21 @@ class Client:
 
     def input_dropdown_checks(self) -> None:
         """Input dropdown checks."""
-        WebDriverWait(self.browser, 5).until(EC.presence_of_element_located(
-            (By.XPATH, '//option[contains(text(), "22")]')
-        ))
+        if self._skip_proof_of_purchase:
+            return
+
+        try:
+            WebDriverWait(self.browser, 5).until(EC.presence_of_element_located(
+                (By.XPATH, '//option[contains(text(), "22")]')
+            ))
+        except TimeoutException as e:
+            # The dropdowns are not loaded, check if we are passed this point.
+            if self.browser.find_element(By.CLASS_NAME, 'lz-campaign-xbox-container').get_attribute('data-step') != 'proof-of-purchase':
+                # If we are, assume we will be in other client instances as well.
+                self.__class__._skip_proof_of_purchase = True
+                return
+            else:
+                raise e from e
 
         # Input dropdown values
         dropdowns = self.browser.find_elements(By.TAG_NAME, 'select')

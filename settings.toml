@@ -3,8 +3,9 @@ x_size = 600
 y_size = 1080
 
 [redeem]
-open_redemption_page = true  # Automatically open redemption page on your default browser with the code pre-filled.
-xp_boost_only = true         # Ignore non-XP boost codes (emblem/backdrop).
+skip_proof_of_purchase = false  # DO NOT CHANGE THIS VALUE unless your script pauses for 5 seconds in the "we have a winner" section.
+open_redemption_page = true     # Automatically open redemption page on your default browser with the code pre-filled.
+xp_boost_only = true            # Ignore non-XP boost codes (emblem/backdrop).
 
 [info]
 country_code = "NI"           # Do not change this unless required.
