@@ -13,6 +13,7 @@ import webbrowser
 from collections import namedtuple
 from pathlib import Path
 from typing import Any
+from warnings import warn
 
 # 3rd-party
 from faker import Faker
@@ -124,8 +125,9 @@ class Client:
         """Enter generated information into form."""
 
         # Generate information
+        # Northern Ireland is not supported by Faker, so GB is now harcoded
         country_code: str = self.settings['info']['country_code']
-        info:         Faker = Faker(locale=f'en_{country_code}')
+        info:         Faker = Faker(locale='en_GB')
         name:         str = info.first_name()
         email:        str = info.free_email()
         phone:        str = self.settings['info']['phone_number']
@@ -174,12 +176,29 @@ class Client:
 
     def input_bar_code(self) -> None:
         """Input bar code."""
+        warn('Bar code input should not be used, instead use input_dropdown_checks()', DeprecationWarning)
+
         bar_code = self.settings['info']['bar_code']
 
         # Input bar code
         WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.NAME, 'code')))
         form = self.browser.find_element(By.CLASS_NAME, 'infx-form-shell')
         form.find_element(By.NAME, 'code').send_keys(bar_code)
+
+        # Press play button
+        buttons = self.browser.find_element(By.CLASS_NAME, 'button-group')
+        buttons.find_elements(By.TAG_NAME, 'button')[1].click()
+
+    def input_dropdown_checks(self) -> None:
+        """Input dropdown checks."""
+        WebDriverWait(self.browser, 5).until(EC.presence_of_element_located(
+            (By.XPATH, '//option[contains(text(), "22")]')
+        ))
+
+        # Input dropdown values
+        dropdowns = self.browser.find_elements(By.TAG_NAME, 'select')
+        Select(dropdowns[0]).select_by_value('22')
+        Select(dropdowns[1]).select_by_value('19:00')
 
         # Press play button
         buttons = self.browser.find_element(By.CLASS_NAME, 'button-group')
