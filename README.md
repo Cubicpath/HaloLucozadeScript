@@ -1,6 +1,8 @@
 HaloLucozadeScript
 ===============
 
+# CURRENTLY DOES NOT WORK FOR THE CURRENT VERSION OF THE WEBSITE
+
 A small script built on [Selenium](https://www.selenium.dev/selenium/docs/api/py/) that automatically completes the [halo-lucozade](https://halo.lucozade.com) promotional form.
 The script will automatically fill out the form and submit it, you just have to complete the captchas.
 It takes around 15 seconds to complete one form, and a second form is generated after you finish the first one's captcha.
