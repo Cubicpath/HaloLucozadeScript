@@ -76,42 +76,63 @@ class Client:
         self.browser.set_window_size(x_size, y_size)
         self.browser.get(SITE_URL)
 
-    @classmethod
-    def build_browser_driver(cls, browser: str, install_only: bool = False) -> RemoteWebDriver | None:
+    def build_browser_driver(self, browser: str, install_only: bool = False) -> RemoteWebDriver | None:
         """Builds a browser."""
         log_dir: Path = Path.cwd() / 'logs'
 
         # Create a factory for building the selected driver.
         match browser:
             case 'firefox':
-                factory = cls.DriverFactory(GeckoDriverManager, Firefox, FirefoxOptions, FirefoxService)
+                factory = self.DriverFactory(GeckoDriverManager, Firefox, FirefoxOptions, FirefoxService)
             case 'chrome':
-                factory = cls.DriverFactory(ChromeDriverManager, Chrome, ChromeOptions, ChromeService)
+                factory = self.DriverFactory(ChromeDriverManager, Chrome, ChromeOptions, ChromeService)
             case 'edge':
-                factory = cls.DriverFactory(EdgeChromiumDriverManager, Edge, EdgeOptions, EdgeService)
+                factory = self.DriverFactory(EdgeChromiumDriverManager, Edge, EdgeOptions, EdgeService)
             case 'opera':
-                factory = cls.DriverFactory(OperaDriverManager, Opera, OperaOptions, None)
+                factory = self.DriverFactory(OperaDriverManager, Opera, OperaOptions, None)
             case 'safari':
-                factory = cls.DriverFactory(None, Safari, SafariOptions, SafariService)
+                factory = self.DriverFactory(None, Safari, SafariOptions, SafariService)
             case _:
                 raise ValueError(f'Invalid browser name: "{browser}". Please choose "firefox", "chrome", "edge", "opera", "safari".')
 
         # Build the browser manager (installs the driver & caches result path)
-        if cls._driver_path is None and factory.manager_type is not None:
+        if self._driver_path is None and factory.manager_type is not None:
             manager: DriverManager = factory.manager_type()
-            cls._driver_path = str(Path(manager.install()).resolve(strict=True))
+            self.__class__._driver_path = str(Path(manager.install()).resolve(strict=True))
 
         # Return early to avoid creating a new browser if we're only installing the driver
         if install_only:
             return None
 
+        proxy_ip:     str = self.settings['browser']['proxy']['ip'].strip()
+        proxy_port:   int = self.settings['browser']['proxy']['port']
+        is_proxy_set: bool = bool(proxy_ip and proxy_port)
+
         # Create the browser options
         options = factory.options_type()
+
         if isinstance(options, ChromiumOptions):
             # Disable logging for Chromium-based browsers to eliminate noisy output in the console
             options.add_argument('--disable-logging')
             options.add_argument('--log-level=3')
             options.add_experimental_option('excludeSwitches', ['enable-logging'])
+
+            # Add proxy server for Chromium-based browsers
+            if is_proxy_set:  # Check if both are set
+                options.add_argument(
+                    f'--proxy-server='
+                    f'{proxy_ip}:'
+                    f'{proxy_port}'
+                )
+
+        if isinstance(options, FirefoxOptions):
+            # Add proxy server for Firefox-based browsers
+            if is_proxy_set:
+                options.set_preference('network.proxy.type', 1)
+                options.set_preference('network.proxy.http', proxy_ip)
+                options.set_preference('network.proxy.http_port', proxy_port)
+                options.set_preference('network.proxy.ssl', proxy_ip)
+                options.set_preference('network.proxy.ssl_port', proxy_port)
 
         # Create the logs folder if required
         if not log_dir.is_dir():
@@ -131,17 +152,17 @@ class Client:
                 )
             case _:
                 # Designates the log file name as ./logs/[driver_name].log
-                log_path: Path = log_dir / Path(cls._driver_path).with_suffix(".log").name
+                log_path: Path = log_dir / Path(self._driver_path).with_suffix(".log").name
 
                 if factory.service_type is not None:
-                    service: Service = factory.service_type(executable_path=cls._driver_path, log_path=log_path)
+                    service: Service = factory.service_type(executable_path=self._driver_path, log_path=log_path)
                     driver = factory.driver_type(
                         service=service,
                         options=options
                     )
                 else:
                     driver = factory.driver_type(
-                        executable_path=cls._driver_path,
+                        executable_path=self._driver_path,
                         service_log_path=log_path,
                         options=options
                     )
@@ -167,7 +188,7 @@ class Client:
         store:        str = self.settings['info']['store']
 
         # Wait for main form to load
-        WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.CLASS_NAME, 'infx-form-shell')))
+        WebDriverWait(self.browser, 60).until(EC.presence_of_element_located((By.CLASS_NAME, 'infx-form-shell')))
         form = self.browser.find_element(By.CLASS_NAME, 'infx-form-shell')
 
         # Enter generated information
