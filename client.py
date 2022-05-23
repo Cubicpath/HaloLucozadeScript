@@ -23,6 +23,7 @@ from selenium.webdriver import Chrome
 from selenium.webdriver import Edge
 from selenium.webdriver import Firefox
 from selenium.webdriver import Opera
+from selenium.webdriver import Safari
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chromium.options import ChromiumOptions
@@ -34,6 +35,8 @@ from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.opera.options import Options as OperaOptions
+from selenium.webdriver.safari.options import Options as SafariOptions
+from selenium.webdriver.safari.service import Service as SafariService
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
@@ -76,6 +79,7 @@ class Client:
     @classmethod
     def build_browser_driver(cls, browser: str, install_only: bool = False) -> RemoteWebDriver | None:
         """Builds a browser."""
+        log_dir: Path = Path.cwd() / 'logs'
 
         # Create a factory for building the selected driver.
         match browser:
@@ -87,20 +91,15 @@ class Client:
                 factory = cls.DriverFactory(EdgeChromiumDriverManager, Edge, EdgeOptions, EdgeService)
             case 'opera':
                 factory = cls.DriverFactory(OperaDriverManager, Opera, OperaOptions, None)
+            case 'safari':
+                factory = cls.DriverFactory(None, Safari, SafariOptions, SafariService)
             case _:
-                raise ValueError(f'Invalid browser name: "{browser}". Please choose "firefox", "chrome", "edge", or "opera".')
+                raise ValueError(f'Invalid browser name: "{browser}". Please choose "firefox", "chrome", "edge", "opera", "safari".')
 
         # Build the browser manager (installs the driver & caches result path)
-        if cls._driver_path is None:
+        if cls._driver_path is None and factory.manager_type is not None:
             manager: DriverManager = factory.manager_type()
             cls._driver_path = str(Path(manager.install()).resolve(strict=True))
-
-        # Designates the log file name as ./logs/[driver_name].log
-        log_path: Path = Path.cwd() / f'logs/{Path(cls._driver_path).with_suffix("").name}.log'
-
-        # Create the logs folder if required
-        if not log_path.parent.is_dir():
-            log_path.parent.mkdir(parents=True)
 
         # Return early to avoid creating a new browser if we're only installing the driver
         if install_only:
@@ -114,19 +113,38 @@ class Client:
             options.add_argument('--log-level=3')
             options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
+        # Create the logs folder if required
+        if not log_dir.is_dir():
+            log_dir.mkdir()
+
         # Build the browser driver object
-        if factory.service_type is not None:
-            service: Service = factory.service_type(executable_path=cls._driver_path, log_path=log_path)
-            driver = factory.driver_type(
-                service=service,
-                options=options
-            )
-        else:
-            driver = factory.driver_type(
-                executable_path=cls._driver_path,
-                service_log_path=log_path,
-                options=options
-            )
+        match factory.driver_type.__mro__:
+            # case Opera.__mro__:
+            #     driver = factory.driver_type(
+            #         service=factory.service_type(),
+            #         options=options
+            #     )
+            case Safari.__mro__:
+                driver = factory.driver_type(
+                    service=factory.service_type(),
+                    options=options
+                )
+            case _:
+                # Designates the log file name as ./logs/[driver_name].log
+                log_path: Path = log_dir / Path(cls._driver_path).with_suffix(".log").name
+
+                if factory.service_type is not None:
+                    service: Service = factory.service_type(executable_path=cls._driver_path, log_path=log_path)
+                    driver = factory.driver_type(
+                        service=service,
+                        options=options
+                    )
+                else:
+                    driver = factory.driver_type(
+                        executable_path=cls._driver_path,
+                        service_log_path=log_path,
+                        options=options
+                    )
 
         return driver
 

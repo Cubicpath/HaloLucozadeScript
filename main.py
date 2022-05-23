@@ -32,7 +32,7 @@ def main() -> None:
     print(f'{"=" * 50}')
     print('Welcome to HaloLucozadeScript! Please remember that you can only redeem 120 xp boost codes per account.\n')
 
-    browser: str = input('Please enter the browser you would like to use (supported: firefox, chrome, edge, opera): ').strip().lower()
+    browser: str = input('Please enter the browser you would like to use (supported: firefox, chrome, edge, opera, safari): ').strip().lower()
     amount:  int = int(input('How many clients would you like to run? ').strip() or '1')  # Default (no answer) is 1
 
     if amount != 0:
