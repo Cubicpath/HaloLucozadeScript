@@ -1,7 +1,7 @@
 HaloLucozadeScript
 ===============
 
-# CURRENTLY DOES NOT WORK FOR THE CURRENT VERSION OF THE WEBSITE
+# CURRENTLY DOES NOT WORK FOR THE NEW VERSION OF THE WEBSITE
 
 A small script built on [Selenium](https://www.selenium.dev/selenium/docs/api/py/) that automatically completes the [halo-lucozade](https://halo.lucozade.com) promotional form.
 The script will automatically fill out the form and submit it, you just have to complete the captchas.
