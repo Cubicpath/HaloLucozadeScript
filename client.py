@@ -55,8 +55,8 @@ class Client:
     _driver_path: str | None = None
     _skip_proof_of_purchase: bool = False
     DriverFactory = namedtuple(
-        'Factory', ('manager_type', 'driver_type', 'options_type', 'service_type'),
-        defaults=(DriverManager, RemoteWebDriver, ArgOptions, None)
+        'DriverFactory', ('manager_type', 'driver_type', 'options_type', 'service_type'),
+        defaults=(DriverManager, RemoteWebDriver, ArgOptions, Service)
     )
 
     def __init__(self, browser: str, settings: dict[str, Any]) -> None:
