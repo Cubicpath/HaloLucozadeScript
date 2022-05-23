@@ -37,9 +37,6 @@ def main() -> None:
 
     if amount != 0:
         # Create a thread for each client and run them in parallel.
-        print('Installing WebDriver for Selenium automation...')
-        Client.build_browser_driver(browser, install_only=True)
-
         print('Generating clients...')
         print('\nAll you have to do from now on is solve the captchas!\n')
         print(f'{"-" * 17}Collected-Codes{"-" * 18}\n')
