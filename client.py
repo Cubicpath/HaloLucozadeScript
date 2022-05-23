@@ -104,13 +104,35 @@ class Client:
         if install_only:
             return None
 
+        proxy_ip:     str = self.settings['browser']['proxy']['ip'].strip()
+        proxy_port:   int = self.settings['browser']['proxy']['port']
+        is_proxy_set: bool = bool(proxy_ip and proxy_port)
+
         # Create the browser options
         options = factory.options_type()
+
         if isinstance(options, ChromiumOptions):
             # Disable logging for Chromium-based browsers to eliminate noisy output in the console
             options.add_argument('--disable-logging')
             options.add_argument('--log-level=3')
             options.add_experimental_option('excludeSwitches', ['enable-logging'])
+
+            # Add proxy server for Chromium-based browsers
+            if is_proxy_set:  # Check if both are set
+                options.add_argument(
+                    f'--proxy-server='
+                    f'{proxy_ip}:'
+                    f'{proxy_port}'
+                )
+
+        if isinstance(options, FirefoxOptions):
+            # Add proxy server for Firefox-based browsers
+            if is_proxy_set:
+                options.set_preference('network.proxy.type', 1)
+                options.set_preference('network.proxy.http', proxy_ip)
+                options.set_preference('network.proxy.http_port', proxy_port)
+                options.set_preference('network.proxy.ssl', proxy_ip)
+                options.set_preference('network.proxy.ssl_port', proxy_port)
 
         # Create the logs folder if required
         if not log_dir.is_dir():
