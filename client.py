@@ -5,6 +5,7 @@
 
 __all__ = (
     'Client',
+    'ClientSession',
     'SITE_URL',
 )
 
@@ -52,53 +53,46 @@ from utils import wait
 
 SITE_URL = 'https://halo.lucozade.com/'
 
+DriverFactory = namedtuple(
+    'DriverFactory', ('manager_type', 'driver_type', 'options_type', 'service_type'),
+    defaults=(DriverManager, RemoteWebDriver, ArgOptions, Service)
+)
 
-class Client:
-    """Handles Selenium logic for the Lucozade Redemption Site"""
-    _driver_path: str | None = None
-    _skip_proof_of_purchase: bool = False
-    DriverFactory = namedtuple(
-        'DriverFactory', ('manager_type', 'driver_type', 'options_type', 'service_type'),
-        defaults=(DriverManager, RemoteWebDriver, ArgOptions, Service)
-    )
+
+class ClientSession:
+    """Session for managing configurations of multiple :py:class:`Client` instances."""
 
     def __init__(self, browser: str, settings: dict[str, Any]) -> None:
-        """Initialize the client."""
+        self.browser_name: str = browser
+        self.driver_path: str | None = None
         self.settings: dict[str, Any] = settings
-        x_size: int = self.settings['browser']['x_size']
-        y_size: int = self.settings['browser']['y_size']
+        self.skip_proof_of_purchase: bool = False
 
-        # Disable automation for the proof of purchase section (barcode / dropdowns)
-        if not self._skip_proof_of_purchase:
-            self.__class__._skip_proof_of_purchase = self.settings['redeem']['skip_proof_of_purchase']
+        self.build_browser_driver(install_only=True)
 
-        self.browser: RemoteWebDriver = self.build_browser_driver(browser)
-        self.browser.set_window_size(x_size, y_size)
-        self.browser.get(SITE_URL)
-
-    def build_browser_driver(self, browser: str, install_only: bool = False) -> RemoteWebDriver | None:
+    def build_browser_driver(self, *, install_only: bool = False) -> RemoteWebDriver | None:
         """Builds a browser."""
         log_dir: Path = Path.cwd() / 'logs'
 
         # Create a factory for building the selected driver.
-        match browser:
+        match self.browser_name:
             case 'firefox':
-                factory = self.DriverFactory(GeckoDriverManager, Firefox, FirefoxOptions, FirefoxService)
+                factory = DriverFactory(GeckoDriverManager, Firefox, FirefoxOptions, FirefoxService)
             case 'chrome':
-                factory = self.DriverFactory(ChromeDriverManager, Chrome, ChromeOptions, ChromeService)
+                factory = DriverFactory(ChromeDriverManager, Chrome, ChromeOptions, ChromeService)
             case 'edge':
-                factory = self.DriverFactory(EdgeChromiumDriverManager, Edge, EdgeOptions, EdgeService)
+                factory = DriverFactory(EdgeChromiumDriverManager, Edge, EdgeOptions, EdgeService)
             case 'opera':
-                factory = self.DriverFactory(OperaDriverManager, Opera, OperaOptions, None)
+                factory = DriverFactory(OperaDriverManager, Opera, OperaOptions, None)
             case 'safari':
-                factory = self.DriverFactory(None, Safari, SafariOptions, SafariService)
+                factory = DriverFactory(None, Safari, SafariOptions, SafariService)
             case _:
-                raise ValueError(f'Invalid browser name: "{browser}". Please choose "firefox", "chrome", "edge", "opera", "safari".')
+                raise ValueError(f'Invalid browser name: "{self.browser_name}". Please choose "firefox", "chrome", "edge", "opera", "safari".')
 
         # Build the browser manager (installs the driver & caches result path)
-        if self._driver_path is None and factory.manager_type is not None:
+        if self.driver_path is None and factory.manager_type is not None:
             manager: DriverManager = factory.manager_type()
-            self.__class__._driver_path = str(Path(manager.install()).resolve(strict=True))
+            self.driver_path = str(Path(manager.install()).resolve(strict=True))
 
         # Return early to avoid creating a new browser if we're only installing the driver
         if install_only:
@@ -152,22 +146,40 @@ class Client:
                 )
             case _:
                 # Designates the log file name as ./logs/[driver_name].log
-                log_path: Path = log_dir / Path(self._driver_path).with_suffix(".log").name
+                log_path: Path = log_dir / Path(self.driver_path).with_suffix(".log").name
 
                 if factory.service_type is not None:
-                    service: Service = factory.service_type(executable_path=self._driver_path, log_path=log_path)
+                    service: Service = factory.service_type(executable_path=self.driver_path, log_path=log_path)
                     driver = factory.driver_type(
                         service=service,
                         options=options
                     )
                 else:
                     driver = factory.driver_type(
-                        executable_path=self._driver_path,
+                        executable_path=self.driver_path,
                         service_log_path=log_path,
                         options=options
                     )
 
         return driver
+
+
+class Client:
+    """Handles Selenium logic for the Lucozade Redemption Site"""
+
+    def __init__(self, session: ClientSession) -> None:
+        """Initialize the client."""
+        self.session:  ClientSession = session
+        x_size: int = session.settings['browser']['x_size']
+        y_size: int = session.settings['browser']['y_size']
+
+        # Disable automation for the proof of purchase section (barcode / dropdowns)
+        if not session.skip_proof_of_purchase:
+            session.skip_proof_of_purchase = session.settings['redeem']['skip_proof_of_purchase']
+
+        self.browser: RemoteWebDriver = self.session.build_browser_driver()
+        self.browser.set_window_size(x_size, y_size)
+        self.browser.get(SITE_URL)
 
     def accept_cookies(self) -> None:
         """Remove cookie popup."""
@@ -178,14 +190,14 @@ class Client:
         """Enter generated information into form."""
 
         # Generate information
-        # Northern Ireland is not supported by Faker, so GB is now harcoded
-        country_code: str = self.settings['info']['country_code']
+        # Northern Ireland is not supported by Faker, so GB is now hardcoded
+        country_code: str = self.session.settings['info']['country_code']
         info:         Faker = Faker(locale='en_GB')
         name:         str = info.first_name()
         email:        str = info.free_email()
-        phone:        str = self.settings['info']['phone_number']
-        postcode:     str = self.settings['info']['postcode']
-        store:        str = self.settings['info']['store']
+        phone:        str = self.session.settings['info']['phone_number']
+        postcode:     str = self.session.settings['info']['postcode']
+        store:        str = self.session.settings['info']['store']
 
         # Wait for main form to load
         WebDriverWait(self.browser, 60).until(EC.presence_of_element_located((By.CLASS_NAME, 'infx-form-shell')))
@@ -234,7 +246,7 @@ class Client:
         """Input bar code."""
         warn('Bar code input should not be used, instead use input_dropdown_checks()', DeprecationWarning)
 
-        bar_code = self.settings['info']['bar_code']
+        bar_code = self.session.settings['info']['bar_code']
 
         # Input bar code
         WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.NAME, 'code')))
@@ -247,7 +259,7 @@ class Client:
 
     def input_dropdown_checks(self) -> None:
         """Input dropdown checks."""
-        if self._skip_proof_of_purchase:
+        if self.session.skip_proof_of_purchase:
             return
 
         try:
@@ -287,8 +299,8 @@ class Client:
 
     def redeem_codes(self) -> None:
         """Collect redeemed codes."""
-        open_redemption_page: bool = self.settings['redeem']['open_redemption_page']
-        xp_boost_only:        bool = self.settings['redeem']['xp_boost_only']
+        open_redemption_page: bool = self.session.settings['redeem']['open_redemption_page']
+        xp_boost_only:        bool = self.session.settings['redeem']['xp_boost_only']
 
         # Ensure the redemption code buttons are fully loaded
         WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.CLASS_NAME, 'button-group')))

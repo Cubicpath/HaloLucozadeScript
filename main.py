@@ -19,7 +19,7 @@ from typing import Any
 import toml
 
 # local
-from client import Client
+from client import Client, ClientSession
 
 settings: dict[str, Any] = toml.loads(
     (Path.cwd() / 'settings.toml').read_text(encoding='utf8')
@@ -37,10 +37,13 @@ def main() -> None:
 
     if amount != 0:
         # Create a thread for each client and run them in parallel.
+        print('Installing WebDriver for Selenium automation...')
+        session = ClientSession(browser, settings)
+
         print('Generating clients...')
         print('\nAll you have to do from now on is solve the captchas!\n')
         print(f'{"-" * 17}Collected-Codes{"-" * 18}\n')
-        generate_clients(amount, browser=browser, settings=settings)
+        generate_clients(amount, session=session)
     else:
         finish_up()
 
