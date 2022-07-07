@@ -67,7 +67,7 @@ class ClientSession:
     def __init__(self, browser: str, settings: dict[str, Any]) -> None:
         self.browser_name:           str = browser
         self.driver_path:            str | None = None
-        self.email_client: DropMailClient | None = None
+        self.email_client:           DropMailClient | None = None
         self.settings:               dict[str, Any] = settings
         self.skip_proof_of_purchase: bool = False
 

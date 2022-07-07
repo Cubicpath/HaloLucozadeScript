@@ -41,11 +41,11 @@ def main() -> None:
         print('Installing WebDriver for Selenium automation...')
         session = ClientSession(browser, settings)
 
+        sys.stderr = (Path.cwd() / 'logs/HaloLucozadeScript.log').resolve().open('w', encoding='utf8')
+
         print('Generating email client...')
         session.build_email_client()
         atexit.register(session.email_client.quit)
-
-        sys.stderr = (Path.cwd() / 'logs/HaloLucozadeScript.log').resolve().open('w', encoding='utf8')
 
         print('Generating clients...')
         print('\nAll you have to do from now on is solve the captchas!\n')
