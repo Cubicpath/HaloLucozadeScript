@@ -2,6 +2,9 @@
 x_size = 600
 y_size = 1080
 
+[browser.email]
+visible = false
+
 [browser.proxy]  # Settings for the proxy server.
 ip = ""
 port = 0

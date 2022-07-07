@@ -78,7 +78,7 @@ class ClientSession:
         self.email_client = DropMailClient(self)
         self.email_client.create()
 
-    def build_browser_driver(self, *, install_only: bool = False) -> RemoteWebDriver | None:
+    def build_browser_driver(self, *, headless: bool = False, install_only: bool = False) -> RemoteWebDriver | None:
         """Builds a browser."""
         log_dir: Path = Path.cwd() / 'logs'
 
@@ -117,6 +117,7 @@ class ClientSession:
 
         if isinstance(options, ChromiumOptions):
             # Disable logging for Chromium-based browsers to eliminate noisy output in the console
+            options.headless = headless
             options.add_argument('--disable-blink-features=AutomationControlled')
             options.add_argument('--disable-logging')
             options.add_argument('--log-level=3')
@@ -133,6 +134,7 @@ class ClientSession:
 
         if isinstance(options, FirefoxOptions):
             # Add proxy server for Firefox-based browsers
+            options.headless = headless
             if is_proxy_set:
                 options.set_preference('network.proxy.type', 1)
                 options.set_preference('network.proxy.http', proxy_ip)
@@ -390,7 +392,8 @@ class DropMailClient:
 
     def create(self) -> None:
         """Login to 10 minutes email."""
-        self.browser = self.session.build_browser_driver()
+        headless = not self.session.settings['browser']['email']['visible']
+        self.browser = self.session.build_browser_driver(headless=headless)
         self.browser.get('https://dropmail.me/en/')
 
     def get_address(self) -> str:
