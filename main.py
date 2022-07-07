@@ -40,6 +40,8 @@ def main() -> None:
         print('Installing WebDriver for Selenium automation...')
         session = ClientSession(browser, settings)
 
+        session.build_email_client()
+
         print('Generating clients...')
         print('\nAll you have to do from now on is solve the captchas!\n')
         print(f'{"-" * 17}Collected-Codes{"-" * 18}\n')
@@ -73,8 +75,9 @@ def generate_clients(number: int, /, *args, **kwargs) -> None:
     client.accept_cookies()
     client.enter_information()
     client.submit_form()
+    client.verify_email()
 
-    # After captcha, launch another client.
+    # After verification, launch another client.
     next_number = number - 1
     if next_number:
         kwargs.update({'__og_number': __og_number})
