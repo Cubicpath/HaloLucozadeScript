@@ -1,13 +1,13 @@
 HaloLucozadeScript
 ===============
 
-# CURRENTLY DOES NOT WORK FOR THE NEW VERSION OF THE WEBSITE
-
 A small script built on [Selenium](https://www.selenium.dev/selenium/docs/api/py/) that automatically completes the [halo-lucozade](https://halo.lucozade.com) promotional form.
 The script will automatically fill out the form and submit it, you just have to complete the captchas.
 It takes around 15 seconds to complete one form, and a second form is generated after you finish the first one's captcha.
 
-Please remember that the maximum number of Double XP codes you can redeem during this promotion is 120 per account.
+#### Notes:
++ The maximum number of Double XP codes you can redeem during this promotion is 120 per account.
++ The promotion ends between Aug 8-12, 2022 at 11:00:00PM UTC.
 
 ### Disclaimer:
 _**This project is in no way associated with, endorsed by, or otherwise affiliated with the
@@ -47,6 +47,20 @@ You can change them by editing the file in your text editor of choice.
 |--------------------------|-------------|---------------|--------------------------------------------------------------------------------------|
 | `x_size`                 | **integer** | 600           | The width of the browser window                                                      |
 | `y_size`                 | **integer** | 1080          | The height of the browser window                                                     |
+
+#### Browser.email
+| Setting                  | Type        | Default | Description                             |
+|--------------------------|-------------|---------|-----------------------------------------|
+| `visible`                | **boolean** | false   | Whether to show the email client window |
+| `change_email_every`     | **integer** | 1       | Get a new email address every X clients |
+
+#### Browser.proxy
+| Setting         | Type        | Default | Description                                    |
+|-----------------|-------------|---------|------------------------------------------------|
+| `ip`            | **string**  | ""      | The proxy IP/hostname                          |
+| `port`          | **integer** | 0       | The proxy Port                                 |
+| `is_socks`      | **boolean** | false   | If true, uses socks proxies as opposed to HTTP |
+| `socks_version` | **integer** | 5       | The socks version to use if `is_socks` is true |
 
 #### Redeem
 | Setting                  | Type        | Default       | Description                                                                          |

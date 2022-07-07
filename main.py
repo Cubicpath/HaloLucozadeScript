@@ -87,7 +87,7 @@ def generate_clients(number: int, /, *args, **kwargs) -> None:
     client.enter_information()
     client.submit_form()
 
-    # After verification, launch another client.
+    # After captcha, launch another client.
     next_number = number - 1
     if next_number:
         kwargs.update({'__og_number': __og_number})
