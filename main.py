@@ -11,6 +11,7 @@ __all__ = (
 
 # stdlib
 import atexit
+import sys
 from threading import Thread
 from pathlib import Path
 from typing import Any
@@ -42,6 +43,8 @@ def main() -> None:
 
         session.build_email_client()
         atexit.register(session.email_client.quit)
+
+        sys.stderr = (Path.cwd() / 'logs/HaloLucozadeScript.log').resolve().open('w', encoding='utf8')
 
         print('Generating clients...')
         print('\nAll you have to do from now on is solve the captchas!\n')
