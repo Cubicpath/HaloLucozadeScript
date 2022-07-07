@@ -269,7 +269,7 @@ class Client:
         popup = self.browser.find_element(By.CLASS_NAME, 'pop-over-interface-inner')
         buttons = popup.find_element(By.CLASS_NAME, 'button-group').find_elements(By.TAG_NAME, 'button')
 
-        text: str = ''
+        verification_code: str = ''
 
         # Every 2 seconds check if the email has been sent, and if not five times in a row, resend the email.
         # Do this 3 times
@@ -278,19 +278,26 @@ class Client:
             for _ in range(5):
                 emails = self.session.email_client.get_emails()
                 if emails:
-                    # Get the latest email's text
-                    text = emails[0][0]
-                    do_break = True
+                    try:
+                        # Get the latest email's text and parse for the verification code.
+                        verification_code = emails[0][0].split(' - ')[1].strip()
+                    except IndexError:
+                        continue
+                    else:
+                        # If found, escape all loops
+                        do_break = True
                 if do_break:
                     break
-                wait(2)
+                wait(1, 2)
             if do_break:
                 break
             # Click resend button
             buttons[1].click()
 
+        if not verification_code:
+            exit(100)
+
         # Get the verification code from the email contents and press verify
-        verification_code = text.split(' - ')[1].strip()
         text_box = popup.find_element(By.CSS_SELECTOR, 'input.textbox')
         text_box.click()
         text_box.send_keys(verification_code)
@@ -374,7 +381,7 @@ class Client:
             if xp_boost_only:
                 print(f'{prize_code}')
             else:
-                print(f'{prize_type}: {prize_code}')
+                print(f'{(prize_type + ":").ljust(16)} {prize_code}')
 
     def quit(self) -> None:
         """Quits the browser."""
