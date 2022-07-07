@@ -368,7 +368,11 @@ class Client:
             redemption_url = f'https://www.halowaypoint.com/redeem?code={prize_code}'
             if open_redemption_page:
                 webbrowser.open(redemption_url, new=2, autoraise=False)
-            print(prize_code)
+
+            if xp_boost_only:
+                print(f'{prize_code}')
+            else:
+                print(f'{prize_type}: {prize_code}')
 
     def quit(self) -> None:
         """Quits the browser."""
