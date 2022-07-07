@@ -83,7 +83,6 @@ def generate_clients(number: int, /, *args, **kwargs) -> None:
     client.accept_cookies()
     client.enter_information()
     client.submit_form()
-    client.verify_email()
 
     # After verification, launch another client.
     next_number = number - 1
@@ -94,6 +93,7 @@ def generate_clients(number: int, /, *args, **kwargs) -> None:
         next_client.start()
 
     # Finish up while user starts on new client.
+    client.verify_email()
     client.input_dropdown_checks()
     client.collect_reward()
     client.redeem_codes()
