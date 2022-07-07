@@ -109,8 +109,10 @@ class ClientSession:
 
         if isinstance(options, ChromiumOptions):
             # Disable logging for Chromium-based browsers to eliminate noisy output in the console
+            options.add_argument('--disable-blink-features=AutomationControlled')
             options.add_argument('--disable-logging')
             options.add_argument('--log-level=3')
+            options.add_experimental_option('useAutomationExtension', False)
             options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
             # Add proxy server for Chromium-based browsers
