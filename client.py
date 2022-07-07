@@ -98,9 +98,11 @@ class ClientSession:
         if install_only:
             return None
 
-        proxy_ip:     str = self.settings['browser']['proxy']['ip'].strip()
-        proxy_port:   int = self.settings['browser']['proxy']['port']
-        is_proxy_set: bool = bool(proxy_ip and proxy_port)
+        proxy_ip:      str = self.settings['browser']['proxy']['ip'].strip()
+        proxy_port:    int = self.settings['browser']['proxy']['port']
+        is_socks:      bool = self.settings['browser']['proxy']['is_socks']
+        socks_version: int = self.settings['browser']['proxy']['socks_version']
+        is_proxy_set:  bool = bool(proxy_ip and proxy_port)
 
         # Create the browser options
         options = factory.options_type()
@@ -115,8 +117,8 @@ class ClientSession:
             if is_proxy_set:  # Check if both are set
                 options.add_argument(
                     f'--proxy-server='
-                    f'{proxy_ip}:'
-                    f'{proxy_port}'
+                    f'socks{socks_version}://' if is_socks else ''
+                    f'{proxy_ip}:{proxy_port}'
                 )
 
         if isinstance(options, FirefoxOptions):
@@ -127,6 +129,10 @@ class ClientSession:
                 options.set_preference('network.proxy.http_port', proxy_port)
                 options.set_preference('network.proxy.ssl', proxy_ip)
                 options.set_preference('network.proxy.ssl_port', proxy_port)
+                if is_socks:
+                    options.set_preference('network.proxy.socks', proxy_ip)
+                    options.set_preference('network.proxy.socks_port', proxy_port)
+                    options.set_preference('network.proxy.socks_version', socks_version)
 
         # Create the logs folder if required
         if not log_dir.is_dir():
