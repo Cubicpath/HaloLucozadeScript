@@ -41,6 +41,7 @@ def main() -> None:
         print('Installing WebDriver for Selenium automation...')
         session = ClientSession(browser, settings)
 
+        print('Generating email client...')
         session.build_email_client()
         atexit.register(session.email_client.quit)
 
