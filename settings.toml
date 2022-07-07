@@ -2,8 +2,9 @@
 x_size = 600
 y_size = 1080
 
-[browser.email]
-visible = false
+[browser.email]  # Settings for the email client.
+visible = false         # Whether to show the email client window.
+change_email_every = 1  # Setting this above 1 may cause rate-limiting issues.
 
 [browser.proxy]  # Settings for the proxy server.
 ip = ""

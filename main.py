@@ -41,6 +41,7 @@ def main() -> None:
         session = ClientSession(browser, settings)
 
         session.build_email_client()
+        atexit.register(session.email_client.quit)
 
         print('Generating clients...')
         print('\nAll you have to do from now on is solve the captchas!\n')
@@ -70,6 +71,13 @@ def generate_clients(number: int, /, *args, **kwargs) -> None:
     # Create new client.
     client = Client(*args, **kwargs)
     atexit.register(client.quit)
+
+    # Get a new email address every time the ['browser']['email']['change_email_every'] interval is reached.
+    if (
+            number != __og_number and
+            (-number + __og_number) % kwargs['session'].settings['browser']['email']['change_email_every'] == 0
+    ):
+        client.session.email_client.get_new_email()
 
     # Load the form and fill it out.
     client.accept_cookies()
