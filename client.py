@@ -189,7 +189,7 @@ class Client:
 
     def accept_cookies(self) -> None:
         """Remove cookie popup."""
-        WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.CLASS_NAME, 'block-link')))
+        WebDriverWait(self.browser, 60).until(EC.presence_of_element_located((By.CLASS_NAME, 'block-link')))
         self.browser.find_element(By.CLASS_NAME, 'block-link').click()
 
     def enter_information(self) -> None:
@@ -206,7 +206,7 @@ class Client:
         store:        str = self.session.settings['info']['store']
 
         # Wait for main form to load
-        WebDriverWait(self.browser, 60).until(EC.presence_of_element_located((By.CLASS_NAME, 'infx-form-shell')))
+        WebDriverWait(self.browser, 30).until(EC.presence_of_element_located((By.CLASS_NAME, 'infx-form-shell')))
         form = self.browser.find_element(By.CLASS_NAME, 'infx-form-shell')
 
         # Enter generated information
