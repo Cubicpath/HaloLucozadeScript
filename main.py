@@ -11,6 +11,7 @@ __all__ = (
 
 # stdlib
 import atexit
+import sys
 from threading import Thread
 from pathlib import Path
 from typing import Any
@@ -39,6 +40,11 @@ def main() -> None:
         # Create a thread for each client and run them in parallel.
         print('Installing WebDriver for Selenium automation...')
         session = ClientSession(browser, settings)
+
+        session.build_email_client()
+        atexit.register(session.email_client.quit)
+
+        sys.stderr = (Path.cwd() / 'logs/HaloLucozadeScript.log').resolve().open('w', encoding='utf8')
 
         print('Generating clients...')
         print('\nAll you have to do from now on is solve the captchas!\n')
@@ -69,12 +75,19 @@ def generate_clients(number: int, /, *args, **kwargs) -> None:
     client = Client(*args, **kwargs)
     atexit.register(client.quit)
 
+    # Get a new email address every time the ['browser']['email']['change_email_every'] interval is reached.
+    if (
+            number != __og_number and
+            (-number + __og_number) % kwargs['session'].settings['browser']['email']['change_email_every'] == 0
+    ):
+        client.session.email_client.get_new_email()
+
     # Load the form and fill it out.
     client.accept_cookies()
     client.enter_information()
     client.submit_form()
 
-    # After captcha, launch another client.
+    # After verification, launch another client.
     next_number = number - 1
     if next_number:
         kwargs.update({'__og_number': __og_number})
@@ -83,6 +96,7 @@ def generate_clients(number: int, /, *args, **kwargs) -> None:
         next_client.start()
 
     # Finish up while user starts on new client.
+    client.verify_email()
     client.input_dropdown_checks()
     client.collect_reward()
     client.redeem_codes()
