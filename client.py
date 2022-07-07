@@ -315,7 +315,7 @@ class Client:
             return
 
         try:
-            WebDriverWait(self.browser, 5).until(EC.presence_of_element_located(
+            WebDriverWait(self.browser, 10).until(EC.presence_of_element_located(
                 (By.XPATH, '//option[contains(text(), "22")]')
             ))
         except TimeoutException as e:
@@ -342,7 +342,7 @@ class Client:
         self.browser.find_element(By.CLASS_NAME, '__winner-state').click()
 
         # glitch-one is overwritten by lz-campaign-galaxy-container, so click using JavaScript
-        WebDriverWait(self.browser, 15).until(EC.element_to_be_clickable((By.CLASS_NAME, 'glitch-one')))
+        WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.CLASS_NAME, 'glitch-one')))
         self.browser.execute_script("arguments[0].click();", self.browser.find_element(By.CLASS_NAME, 'lz-campaign-xbox-winner'))
 
         # Press redemption portal button
