@@ -6,12 +6,14 @@
 __all__ = (
     'Client',
     'ClientSession',
+    'DropMailClient',
     'SITE_URL',
 )
 
 # stdlib
 import webbrowser
 from collections import namedtuple
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 from warnings import warn
@@ -63,12 +65,18 @@ class ClientSession:
     """Session for managing configurations of multiple :py:class:`Client` instances."""
 
     def __init__(self, browser: str, settings: dict[str, Any]) -> None:
-        self.browser_name: str = browser
-        self.driver_path: str | None = None
-        self.settings: dict[str, Any] = settings
+        self.browser_name:           str = browser
+        self.driver_path:            str | None = None
+        self.email_client: DropMailClient | None = None
+        self.settings:               dict[str, Any] = settings
         self.skip_proof_of_purchase: bool = False
 
         self.build_browser_driver(install_only=True)
+
+    def build_email_client(self) -> None:
+        """Builds the email client."""
+        self.email_client = DropMailClient(self)
+        self.email_client.create()
 
     def build_browser_driver(self, *, install_only: bool = False) -> RemoteWebDriver | None:
         """Builds a browser."""
@@ -202,7 +210,7 @@ class Client:
         country_code: str = self.session.settings['info']['country_code']
         info:         Faker = Faker(locale='en_GB')
         name:         str = info.first_name()
-        email:        str = info.free_email()
+        email:        str = self.session.email_client.get_address()
         phone:        str = self.session.settings['info']['phone_number']
         postcode:     str = self.session.settings['info']['postcode']
         store:        str = self.session.settings['info']['store']
@@ -244,11 +252,47 @@ class Client:
         ))
         self.browser.switch_to.default_content()
 
-        wait(0.5)  # Wait for animation to complete
+        # Wait for animation to complete
+        wait(0.5)
 
         # Press next button
         buttons = self.browser.find_element(By.CLASS_NAME, 'button-group')
         buttons.find_elements(By.TAG_NAME, 'button')[1].click()
+
+    def verify_email(self):
+        """Get the latest email from the session email client and input the verification code."""
+        # Wait until popup is visible
+        WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.CLASS_NAME, 'pop-over-interface-inner')))
+
+        popup = self.browser.find_element(By.CLASS_NAME, 'pop-over-interface-inner')
+        buttons = popup.find_element(By.CLASS_NAME, 'button-group').find_elements(By.TAG_NAME, 'button')
+
+        text: str = ''
+
+        # Every 2 seconds check if the email has been sent, and if not five times in a row, resend the email.
+        # Do this 3 times
+        do_break = False
+        for _ in range(3):
+            for _ in range(5):
+                emails = self.session.email_client.get_emails()
+                if emails:
+                    # Get the latest email's text
+                    text = emails[0][0]
+                    do_break = True
+                if do_break:
+                    break
+                wait(2)
+            if do_break:
+                break
+            # Click resend button
+            buttons[1].click()
+
+        # Get the verification code from the email contents and press verify
+        verification_code = text.split(' - ')[1].strip()
+        text_box = popup.find_element(By.CSS_SELECTOR, 'input.textbox')
+        text_box.click()
+        text_box.send_keys(verification_code)
+        buttons[0].click()
 
     def input_bar_code(self) -> None:
         """Input bar code."""
@@ -312,21 +356,71 @@ class Client:
 
         # Ensure the redemption code buttons are fully loaded
         WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.CLASS_NAME, 'button-group')))
-        for i, prize_item in enumerate(self.browser.find_elements(By.CLASS_NAME, 'lz-campaign-xbox-prize-item')):
+        for prize_item in self.browser.find_elements(By.CLASS_NAME, 'lz-campaign-xbox-prize-item'):
+            prize_code = prize_item.find_element(By.CLASS_NAME, 'lz-campaign-xbox-prize-code').text
+            prize_type = prize_item.find_element(By.CLASS_NAME, 'lz-campaign-xbox-prize-type').text.split(' ')[-1]
+
             # Skip non-xp-boost prize items
-            if i == 0 and xp_boost_only:
+            if prize_type != '2XP' and xp_boost_only:
                 continue
+
             # Print code to log and open the redemption link as a new tab in your native web browser
-            try:
-                url = prize_item.find_elements(By.CLASS_NAME, 'infx-button')[1].find_element(By.CLASS_NAME, 'block-link').get_attribute('href')
-                if 'sign-in' in url:
-                    url = url.replace('sign-in?path=/', '')
-                    url = url.replace('%3F', '?')
-                if open_redemption_page:
-                    webbrowser.open(url, new=2, autoraise=False)
-                print(url.split('code=')[1])
-            except (NoSuchElementException, IndexError):
-                pass
+            redemption_url = f'https://www.halowaypoint.com/redeem?code={prize_code}'
+            if open_redemption_page:
+                webbrowser.open(redemption_url, new=2, autoraise=False)
+            print(prize_code)
+
+    def quit(self) -> None:
+        """Quits the browser."""
+        if self.browser is not None:
+            self.browser.quit()
+            self.browser = None
+
+
+class DropMailClient:
+    """Handles Selenium logic for https://dropmail.me/en/"""
+
+    def __init__(self, session: ClientSession) -> None:
+        self.session: ClientSession = session
+        self.browser: RemoteWebDriver | None = None
+
+    def create(self) -> None:
+        """Login to 10 minutes email."""
+        self.browser = self.session.build_browser_driver()
+        self.browser.get('https://dropmail.me/en/')
+
+    def get_address(self) -> str:
+        """Get the current email address."""
+        # Ensure the address is loaded
+        WebDriverWait(self.browser, 180).until(EC.presence_of_element_located((By.CLASS_NAME, 'address')))
+
+        address: str = self.browser.find_element(By.CLASS_NAME, 'address').text
+        return address
+
+    def get_emails(self) -> list[tuple[str, datetime]]:
+        """Get list of emails sorted by date."""
+        WebDriverWait(self.browser, 180).until(EC.presence_of_element_located((By.CLASS_NAME, 'messages-list')))
+        results = []
+
+        try:
+            emails = self.browser.find_element(By.CLASS_NAME, 'messages-list').find_elements(By.TAG_NAME, 'li')
+            if not len(emails):
+                return results
+        except NoSuchElementException:
+            return results
+
+        for email in emails:
+            email_content: str = email.find_element(By.TAG_NAME, 'pre').text
+            date_text:     str = email.find_element(By.XPATH, '//dd[@data-bind="text: receivedAt.toLocaleString()"]').text
+            date:          datetime = datetime.strptime(date_text, '%d/%m/%Y, %H:%M:%S %p')
+
+            results.append((email_content, date))
+
+        return sorted(results, key=lambda x: x[1])
+
+    def get_new_email(self):
+        """Refreshing the page will get a new email address."""
+        self.browser.refresh()
 
     def quit(self) -> None:
         """Quits the browser."""
