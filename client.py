@@ -297,9 +297,9 @@ class Client:
         WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.CLASS_NAME, '__winner-state')))
         self.browser.find_element(By.CLASS_NAME, '__winner-state').click()
 
-        # glitch-one is overwritten by glitch-two, so click on glitch-two
-        WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.CLASS_NAME, 'glitch-one')))
-        self.browser.find_element(By.CLASS_NAME, 'glitch-two').click()
+        # glitch-one is overwritten by lz-campaign-galaxy-container, so click using JavaScript
+        WebDriverWait(self.browser, 15).until(EC.element_to_be_clickable((By.CLASS_NAME, 'glitch-one')))
+        self.browser.execute_script("arguments[0].click();", self.browser.find_element(By.CLASS_NAME, 'lz-campaign-xbox-winner'))
 
         # Press redemption portal button
         WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.CLASS_NAME, 'button-group')))
