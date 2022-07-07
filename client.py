@@ -146,10 +146,6 @@ class ClientSession:
                     options.set_preference('network.proxy.socks_port', proxy_port)
                     options.set_preference('network.proxy.socks_version', socks_version)
 
-        # Create the logs folder if required
-        if not log_dir.is_dir():
-            log_dir.mkdir()
-
         # Build the browser driver object
         match factory.driver_type.__mro__:
             # case Opera.__mro__:

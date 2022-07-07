@@ -30,6 +30,14 @@ settings: dict[str, Any] = toml.loads(
 
 def main() -> None:
     """Program entry point. If __name__ == '__main__'."""
+    log_dir = Path.cwd() / 'logs'
+
+    # Create the logs folder if required
+    if not log_dir.is_dir():
+        log_dir.mkdir()
+
+    sys.stderr = (log_dir / 'HaloLucozadeScript.log').resolve().open('w', encoding='utf8')
+
     print(f'{"=" * 50}')
     print('Welcome to HaloLucozadeScript! Please remember that you can only redeem 120 xp boost codes per account.\n')
 
@@ -40,8 +48,6 @@ def main() -> None:
         # Create a thread for each client and run them in parallel.
         print('Installing WebDriver for Selenium automation...')
         session = ClientSession(browser, settings)
-
-        sys.stderr = (Path.cwd() / 'logs/HaloLucozadeScript.log').resolve().open('w', encoding='utf8')
 
         print('Generating email client...')
         session.build_email_client()
