@@ -19,7 +19,7 @@ How to use:
 
 1. Install [python 3.10](https://www.python.org/downloads/)
 
-2. Download the latest release zip
+2. Download the latest [release zip](https://github.com/Cubicpath/HaloLucozadeScript/releases/latest)
 
 3. Extract the contents of the zip to a folder
 
