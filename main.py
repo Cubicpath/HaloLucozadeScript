@@ -62,7 +62,7 @@ def main() -> None:
 
 
 def finish_up() -> None:
-    """Finish up while user starts on new client."""
+    """Finish up script."""
     print(f'\n{"-" * 17}Collected-Codes{"-" * 18}\n')
     print('All done! Thanks for using HaloLucozadeScript!')
     input('Press <ENTER> to exit script...')
