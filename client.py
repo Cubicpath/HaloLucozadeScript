@@ -12,6 +12,7 @@ __all__ = (
 
 # stdlib
 import webbrowser
+from collections import defaultdict
 from collections import namedtuple
 from datetime import datetime
 from pathlib import Path
@@ -54,6 +55,8 @@ from webdriver_manager.opera import OperaDriverManager
 from utils import wait
 
 SITE_URL = 'https://halo.lucozade.com/'
+LOG_DIR = Path.cwd() / 'logs'
+CODES_DIR = Path.cwd() / 'codes'
 
 DriverFactory = namedtuple(
     'DriverFactory', ('manager_type', 'driver_type', 'options_type', 'service_type'),
@@ -70,6 +73,7 @@ class ClientSession:
         self.email_client:           DropMailClient | None = None
         self.settings:               dict[str, Any] = settings
         self.skip_proof_of_purchase: bool = False
+        self.redeemed_codes:         dict[str, set[str]] = defaultdict(set)
 
         self.build_browser_driver(install_only=True)
 
@@ -80,7 +84,6 @@ class ClientSession:
 
     def build_browser_driver(self, *, headless: bool = False, install_only: bool = False) -> RemoteWebDriver | None:
         """Builds a browser."""
-        log_dir: Path = Path.cwd() / 'logs'
 
         # Create a factory for building the selected driver.
         match self.browser_name:
@@ -160,7 +163,7 @@ class ClientSession:
                 )
             case _:
                 # Designates the log file name as ./logs/[driver_name].log
-                log_path: Path = log_dir / Path(self.driver_path).with_suffix(".log").name
+                log_path: Path = LOG_DIR / Path(self.driver_path).with_suffix('.log').name
 
                 if factory.service_type is not None:
                     service: Service = factory.service_type(executable_path=self.driver_path, log_path=log_path)
@@ -184,12 +187,13 @@ class Client:
     def __init__(self, session: ClientSession) -> None:
         """Initialize the client."""
         self.session:  ClientSession = session
-        x_size: int = session.settings['browser']['x_size']
-        y_size: int = session.settings['browser']['y_size']
 
         # Disable automation for the proof of purchase section (barcode / dropdowns)
         if not session.skip_proof_of_purchase:
             session.skip_proof_of_purchase = session.settings['redeem']['skip_proof_of_purchase']
+
+        x_size: int = session.settings['browser']['x_size']
+        y_size: int = session.settings['browser']['y_size']
 
         self.browser: RemoteWebDriver = self.session.build_browser_driver()
         self.browser.set_window_size(x_size, y_size)
@@ -363,10 +367,28 @@ class Client:
         WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.CLASS_NAME, 'button-group')))
         for prize_item in self.browser.find_elements(By.CLASS_NAME, 'lz-campaign-xbox-prize-item'):
             prize_code = prize_item.find_element(By.CLASS_NAME, 'lz-campaign-xbox-prize-code').text
-            prize_type = prize_item.find_element(By.CLASS_NAME, 'lz-campaign-xbox-prize-type').text.split(' ')[-1]
+            prize_type = prize_item.find_element(By.CLASS_NAME, 'lz-campaign-xbox-prize-type').text.split(' ')[-1].lower()
 
-            # Skip non-xp-boost prize items
-            if prize_type != '2XP' and xp_boost_only:
+            # Append to session prizes in memory
+            self.session.redeemed_codes[prize_type].add(prize_code)
+
+            # Append new codes to their respective files
+            # Separate every session with a string of hyphens
+            # Separate every 5 codes with a newline
+            CODES_DIR.mkdir(parents=True, exist_ok=True)
+            with (CODES_DIR / f'{prize_type}.txt').open('a', encoding='utf8') as f:
+                prize_type_amount = self.session.redeemed_codes[prize_type]
+
+                if len(prize_type_amount) == 1:
+                    f.write(f'------------------------ Generated at {datetime.now()}\n')
+
+                f.write(prize_code + '\n')
+
+                if len(prize_type_amount) % 5 == 0:
+                    f.write('\n')
+
+            # Skip displaying of non-xp-boost prize items
+            if prize_type != '2xp' and xp_boost_only:
                 continue
 
             # Print code to log and open the redemption link as a new tab in your native web browser
