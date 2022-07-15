@@ -444,7 +444,7 @@ class DropMailClient:
         for email in emails:
             email_content: str = email.find_element(By.TAG_NAME, 'pre').text
             date_text:     str = email.find_element(By.XPATH, '//dd[@data-bind="text: receivedAt.toLocaleString()"]').text
-            date:          datetime = datetime.strptime(date_text, '%d/%m/%Y, %H:%M:%S %p')
+            date:          datetime = datetime.strptime(date_text, '%m/%d/%Y, %H:%M:%S %p')
 
             results.append((email_content, date))
 
