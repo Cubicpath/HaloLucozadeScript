@@ -295,7 +295,8 @@ class Client:
             buttons[1].click()
 
         if not verification_code:
-            exit(100)
+            self.quit()
+            exit(0xF1)
 
         # Get the verification code from the email contents and press verify
         text_box = popup.find_element(By.CSS_SELECTOR, 'input.textbox')
