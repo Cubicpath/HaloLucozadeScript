@@ -8,7 +8,7 @@ Codes will be saved to the created `codes` folder, next to main.py etc.
 
 #### Notes:
 + The maximum number of Double XP codes you can redeem during this promotion is 120 per account.
-+ The promotion ends between Aug 12, 2022 at 11:00:00PM UTC.
++ The promotion ends Aug 12, 2022 11:00:00PM UTC.
 + If you do not live in the UK, then you may require a VPN. I recommend the [Windscribe](https://windscribe.net/) desktop client, as it works perfectly with this script, and is free.
 + Email verification has around a 20% chance of failing. If this happens, you are free to close the blocked browser window.
 
