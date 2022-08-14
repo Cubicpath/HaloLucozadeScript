@@ -6,6 +6,8 @@ The script will automatically fill out the form and submit it, you just have to 
 It takes around 15 seconds to complete one form, and a second form is generated after you finish the first one's captcha.
 Codes will be saved to the created `codes` folder, next to main.py etc.
 
+# This repo is deprecated -- Promotion has ended
+
 #### Notes:
 + The maximum number of Double XP codes you can redeem during this promotion is 120 per account.
 + The promotion ends Aug 12, 2022 11:00:00PM UTC.
